@@ -32,3 +32,10 @@ git clone https://github.com/your-username/reelvault.git
 cd reelvault
 npm install
 npm run dev
+
+License
+```
+
+## MIT License
+
+
