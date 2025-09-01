@@ -1,78 +1,76 @@
-ReelVault
+# ReelVault
 
-ReelVault is a project I built from a personal need. Whenever I scroll through Instagram or Facebook, I often find reels or posts that are funny, inspiring, or useful — but I never had a good way to save and organize them. I’d forget, lose them in my likes, or struggle to find them later.
+> A personal project to organize, save, and revisit Instagram and Facebook reels.  
 
-So I asked myself: why not build a system that lets me save, organize, and revisit reels anytime I want? ReelVault is my answer — a web app that makes it easy to collect reels, add notes, group them in collections, and search through them later. It’s not just about storage; it’s about turning my social media discoveries into an organized library I can actually return to.
+---
 
-Project Objectives
+## Why I Built ReelVault  
 
-Save, organize, and revisit reels quickly
+I’ve always wanted a way to **save Facebook posts and Instagram reels** while scrolling.  
+Sometimes I come across something funny, inspiring, or useful — and I think:  
+*“I’ll come back to this later.”*  
 
-Fast add flow with validation and smart metadata
+But the problem? I usually forget. Saving within the apps is messy and unorganized.  
 
-Clean dashboard with powerful search and filters
+So I decided: **why not make my own system?**  
 
-Smooth authentication and reliable sync
+That’s how ReelVault was born — a place where I can:  
+- Save reels I enjoy or want to reference later  
+- Organize them into collections  
+- Add notes and tags for context  
+- Search and filter easily  
+- Build a personal library I can always return to  
 
-Design Principles
+---
 
-Minimal and purposeful
+## Features  
 
-Speed and clarity first
+### Core  
+- Add reels with title, tags, notes, and collections  
+- Grid and list views with reel cards  
+- Video embedding via iframe  
+- Edit and delete functionality  
+- Search and filter by title, tags, or collections  
 
-Smart defaults to reduce cognitive load
+### Stretch Goals  
+- Favorites system  
+- Auto-fetch metadata from Instagram/Facebook  
+- Public collections  
+- Import/export support  
+- Dark mode toggle  
 
-Optimized for both keyboard and mobile users
+---
 
-Features
+## Tech Stack  
 
-Add reels with title, tags, notes, and collections
+- **Framework:** Next.js (App Router)  
+- **Styling:** Tailwind CSS + shadcn/ui  
+- **Auth:** NextAuth.js  
+- **Database:** Supabase or PlanetScale + Prisma ORM  
+- **Validation:** Zod  
+- **Hosting:** Vercel  
 
-Grid and list views with reel cards
+---
 
-Video embedding via iframe
+## Getting Started  
 
-Edit and delete functionality
-
-Search and filter by title, tags, or collections
-
-Optional stretch features: favorites, auto-metadata, public collections, import/export, dark mode
-
-Technical Stack
-
-Framework: Next.js (App Router)
-
-Styling: Tailwind CSS + shadcn/ui
-
-Auth: NextAuth.js
-
-Database: Supabase or PlanetScale + Prisma ORM
-
-Validation: Zod
-
-Hosting: Vercel
-
-Development Setup
-
-Clone the repository:
-
+Clone the repository:  
+```bash
 git clone https://github.com/your-username/reelvault.git
 cd reelvault
-
-
 Install dependencies:
 
+bash
+Copy code
 npm install
-
-
 Set up environment variables (see .env.example).
 
 Run the development server:
 
+bash
+Copy code
 npm run dev
-
 Roadmap
-
 Core setup complete
 
 Authentication connected and stable
@@ -86,5 +84,8 @@ Search and filters fast
 Deployment live on Vercel
 
 License
-
 This project is licensed under the MIT License.
+
+---
+
+Would you like me to also add **badges (build, license, tech stack, etc.) at the top** so it looks even more polished, or kee
