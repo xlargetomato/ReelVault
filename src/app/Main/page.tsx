@@ -1,7 +1,11 @@
+import MainContent from "@/components/pages/MainContent";
+import FetchReels from "@/components/pages/FetchReels";
+
 export default function Main() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">
-      <h1>Main Page</h1>
+      <MainContent />
+      <FetchReels />
     </div>
   );
 }
