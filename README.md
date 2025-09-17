@@ -11,7 +11,7 @@ ReelVault lets me:
 - Add notes and tags for context  
 - Search and filter to find them quickly  
 - Auth system because why not
-  
+
 ---
 
 ## Tech Stack
