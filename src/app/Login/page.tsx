@@ -1,28 +1,28 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+
 export default function Login() {
+  const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
     setSuccess("");
     setLoading(true);
+
     try {
       const res = await fetch("/Api/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await res.json();
@@ -31,10 +31,12 @@ export default function Login() {
         setError(data.error || "Something went wrong");
         return;
       }
+      window.location.assign("/Main");
 
+      // router.push("/Main");
+      // router.refresh();
       setEmail("");
       setPassword("");
-      window.location.href = "/Main";
     } catch (err: any) {
       setError("Network error: " + err.message);
     } finally {
@@ -56,7 +58,7 @@ export default function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
-            <label>Passowrd</label>
+            <label>Password</label>
             <input
               className="p-2 rounded-md bg-red-300 text-black placeholder-black"
               type="password"
@@ -65,14 +67,16 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
             />
             <button
-              className="bg-gray-300 text-black p-2 rounded-md cursor-pointer hover:bg-rose-500"
+              className={`bg-gray-300 text-black p-2 rounded-md cursor-pointer hover:bg-rose-500 ${
+                loading ? "opacity-50 animate-bounce cursor-not-allowed" : ""
+              }`}
               type="submit"
               disabled={loading}
             >
               {loading ? "Loading..." : "Login"}
             </button>
             <Link href="/Register">
-              <p className=" hover:text-rose-500">Dont have account ?</p>
+              <p className="hover:text-rose-500">Don't have an account?</p>
             </Link>
           </div>
         </div>

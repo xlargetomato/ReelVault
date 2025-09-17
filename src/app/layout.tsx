@@ -2,6 +2,7 @@ import { Geist, Geist_Mono, Cedarville_Cursive } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Layout/Navbar";
 import Footer from "@/components/Layout/Footer";
+import Why from "@/components/Layout/Why";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

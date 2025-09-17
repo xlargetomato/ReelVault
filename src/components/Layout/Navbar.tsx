@@ -19,16 +19,27 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-gray-800 text-white p-4 text-center items-center flex flex-row justify-between">
-      <Link href={"/"} className="font-bold text-xl">
-        this is navbar by the way
-      </Link>
+    <nav className="bg-gray-800 text-white p-4 text-center items-center gap-3 flex flex-col sm:flex-row justify-between">
       <Link
-        href="/Main"
+        href={"/"}
         className="font-bold text-xl hover:underline hover:text-gray-600"
       >
-        Main Page
+        Home
       </Link>
+      <div className="flex gap-8">
+        <Link
+          href="/Main"
+          className="font-bold text-xl hover:underline hover:text-gray-600"
+        >
+          Your Reels
+        </Link>
+        <Link
+          href="/Main"
+          className="font-bold text-xl hover:underline hover:text-gray-600"
+        >
+          Reels
+        </Link>
+      </div>
       <Link href="/Login">
         {user ? (
           <div>
