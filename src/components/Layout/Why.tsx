@@ -9,23 +9,27 @@ const Why = () => {
       <button
         onClick={() => {
           setPopup(true);
-          console.log(popUp);
         }}
-        className=" text-white text-xs p-1  cursor-pointer bg-rose-600 rounded hover:bg-rose-700 transition"
+        className=" text-white text-xs p-1  cursor-pointer  bg-rose-600 rounded hover:bg-rose-700 transition"
       >
         why?
       </button>
       {popUp && (
-        <div className="fixed z-30 bg-black flex flex-col p-4 items-center justify-center">
-          <p className="text-black p-2 font-bold text-left text-xl ">
-            BECAUSE WHY NOT ?
-          </p>
-          <p
-            onClick={() => setPopup(false)}
-            className="text-red-500 hover:cursor-pointer bg-white p-2 rounded my-2 hover:bg-rose-900"
-          >
-            Close
-          </p>
+        <div
+          className="fixed inset-0 z-30 flex items-center justify-center 
+               bg-black/60 backdrop-blur-sm"
+        >
+          <div className="bg-white rounded p-6 text-center">
+            <p className="text-black font-bold text-xl mb-4">
+              BECAUSE WHY NOT ?
+            </p>
+            <button
+              onClick={() => setPopup(false)}
+              className="px-4 py-2 rounded bg-rose-600 text-white hover:bg-rose-700 cursor-pointer transition"
+            >
+              Close
+            </button>
+          </div>
         </div>
       )}
     </div>

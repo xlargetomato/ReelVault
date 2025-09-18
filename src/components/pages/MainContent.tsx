@@ -78,7 +78,6 @@ const MainContent = () => {
     }
   }
 
-  // ✅ toggle helper
   const toggleCategory = (cat: string) => {
     setSelectedCategories((prev) =>
       prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
@@ -87,8 +86,8 @@ const MainContent = () => {
 
   return (
     <div className="flex flex-col items-center justify-center p-4">
-      <div className="bg-rose-700 p-10 flex flex-col sm:flex-row items-center gap-6 ">
-        <h1 className="text-white p-4 font-bold">Useful Buttons</h1>
+      <div className="bg-gray-200 p-5 flex flex-col sm:flex-row items-center gap-3 ">
+        <h1 className="text-gray-800 p-2 font-bold">Useful Buttons</h1>
 
         <button
           onClick={() => setShowModal(true)}

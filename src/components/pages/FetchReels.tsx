@@ -193,7 +193,7 @@ const FetchReels = () => {
           Info
         </button>
         {popUp && (
-          <div className="fixed z-10 bg-black bg-opacity-70 flex flex-col p-4 items-center justify-center">
+          <div className="fixed z-10 bg-black/60 backdrop-blur-sm bg-opacity-70 flex flex-col p-4 items-center justify-center">
             <p className="text-white p-2 font-bold text-left text-xl ">
               - You can search on categories <br />
               - Notes you added <br />
