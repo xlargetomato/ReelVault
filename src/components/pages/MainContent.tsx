@@ -46,7 +46,7 @@ const MainContent = () => {
       }
 
       setShowModal(false);
-    } catch (err) {
+    } catch {
       setError("Error adding reel");
     } finally {
       setIsLoading(false);

@@ -1,11 +1,14 @@
 "use client";
 import Link from "next/link";
-import router from "next/router";
 import { useEffect, useState } from "react";
 
+interface User {
+  id: string;
+  email: string;
+}
+
 const Navbar = () => {
-  const [user, setUser] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     fetch("/Api/me")

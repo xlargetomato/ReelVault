@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || "بطاطس";
+const JWT_SECRET = process.env.JWT_SECRET || ">:) بطاطس";
 const EXPIRES_IN = "7d";
 
 export function createToken(payload: object) {
@@ -10,7 +10,7 @@ export function createToken(payload: object) {
 export function verifyToken(token: string) {
   try {
     return jwt.verify(token, JWT_SECRET);
-  } catch (err) {
+  } catch {
     return null;
   }
 }

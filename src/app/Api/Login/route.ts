@@ -35,7 +35,9 @@ export async function POST(req: Request) {
     const secret: Secret = process.env.JWT_SECRET as string;
 
     const options: SignOptions = {
-      expiresIn: process.env.JWT_EXPIRES_IN as number | undefined | any,
+      expiresIn: process.env.JWT_EXPIRES_IN
+        ? parseInt(process.env.JWT_EXPIRES_IN)
+        : "1d",
     };
 
     const token = jwt.sign({ id: user.id, email: user.email }, secret, options);
@@ -54,7 +56,7 @@ export async function POST(req: Request) {
     });
 
     return response;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Login error:", error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }

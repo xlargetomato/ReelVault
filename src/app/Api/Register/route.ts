@@ -36,7 +36,8 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ id: user.id, email: user.email });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

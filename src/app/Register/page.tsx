@@ -44,8 +44,11 @@ export default function Register() {
       setEmail("");
       setPassword("");
       setConfirmPassword("");
-    } catch (err: any) {
-      setError("Network error: " + err.message);
+    } catch (err: unknown) {
+      setError(
+        "Network error: " +
+          (err instanceof Error ? err.message : "Unknown error")
+      );
     } finally {
       setLoading(false);
     }

@@ -1,21 +1,13 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-
 export default function Login() {
-  const router = useRouter();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
     setLoading(true);
 
     try {
@@ -28,7 +20,7 @@ export default function Login() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Something went wrong");
+        console.error(data.error || "Something went wrong");
         return;
       }
       window.location.assign("/Main");
@@ -37,8 +29,11 @@ export default function Login() {
       // router.refresh();
       setEmail("");
       setPassword("");
-    } catch (err: any) {
-      setError("Network error: " + err.message);
+    } catch (err: unknown) {
+      console.error(
+        "Network error: " +
+          (err instanceof Error ? err.message : "Unknown error")
+      );
     } finally {
       setLoading(false);
     }
@@ -76,7 +71,7 @@ export default function Login() {
               {loading ? "Loading..." : "Login"}
             </button>
             <Link href="/Register">
-              <p className="hover:text-rose-500">Don't have an account?</p>
+              <p className="hover:text-rose-500">Don&apos;t have an account?</p>
             </Link>
           </div>
         </div>

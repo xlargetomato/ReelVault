@@ -1,4 +1,4 @@
-// app/api/fb-thumbnail/route.ts
+// app/api/insta-thumbnail/route.ts
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
@@ -8,20 +8,15 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Missing url" }, { status: 400 });
   }
 
-  // Extract Facebook video ID from various URL formats
-  const getVideoId = (url: string) => {
+  // Extract Instagram post ID from various URL formats
+  const getPostId = (url: string) => {
     const patterns = [
-      /facebook\.com\/.*\/videos\/(\d+)/,
-      /facebook\.com\/watch\/?\?v=(\d+)/,
-      /fb\.watch\/([^\/\?]+)/,
-      /facebook\.com\/reel\/(\d+)/,
-      /(?:www\.|web\.)?facebook\.com\/share\/v\/([^\/\?]+)/,
-      /facebook\.com\/.*\/posts\/(\d+)/,
-      /facebook\.com\/photo\.php\?fbid=(\d+)/,
-      /facebook\.com\/.*\/videos\/vb\.\d+\/(\d+)/,
-      // Additional patterns for share URLs
-      /facebook\.com\/share\/r\/([^\/\?]+)/,
-      /facebook\.com\/.*\/videos\/([^\/\?]+)/,
+      /instagram\.com\/p\/([^\/\?]+)/,
+      /instagram\.com\/reel\/([^\/\?]+)/,
+      /instagram\.com\/tv\/([^\/\?]+)/,
+      /instagram\.com\/stories\/[^\/]+\/([^\/\?]+)/,
+      /instagram\.com\/[^\/]+\/p\/([^\/\?]+)/,
+      /instagram\.com\/[^\/]+\/reel\/([^\/\?]+)/,
     ];
 
     for (const pattern of patterns) {
@@ -33,30 +28,30 @@ export async function GET(req: Request) {
     return null;
   };
 
-  const videoId = getVideoId(target);
+  const postId = getPostId(target);
 
   try {
-    // Method 1: Try Facebook Graph API (only if we have a video ID)
-    if (videoId) {
-      const graphUrl = `https://graph.facebook.com/${videoId}/picture?type=large`;
-
+    // Method 1: Try Instagram's oembed API (works for public posts)
+    if (postId) {
       try {
-        const graphRes = await fetch(graphUrl, {
+        const oembedUrl = `https://api.instagram.com/oembed/?url=${encodeURIComponent(
+          target
+        )}`;
+        const oembedRes = await fetch(oembedUrl, {
           headers: {
             "User-Agent":
               "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
-            Accept: "image/*,*/*;q=0.8",
           },
         });
 
-        if (
-          graphRes.ok &&
-          graphRes.headers.get("content-type")?.startsWith("image/")
-        ) {
-          return NextResponse.json({ thumbnail: graphUrl });
+        if (oembedRes.ok) {
+          const oembedData = await oembedRes.json();
+          if (oembedData.thumbnail_url) {
+            return NextResponse.json({ thumbnail: oembedData.thumbnail_url });
+          }
         }
       } catch {
-        console.log("Graph API failed, trying scraping method");
+        console.log("Instagram oembed failed, trying scraping method");
       }
     }
 
@@ -84,16 +79,18 @@ export async function GET(req: Request) {
 
     const html = await pageRes.text();
 
-    // Enhanced meta tag patterns for Facebook
+    // Enhanced meta tag patterns for Instagram
     const patterns = [
       /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i,
       /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i,
       /<meta[^>]+property=["']og:image:secure_url["'][^>]+content=["']([^"']+)["']/i,
       /<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i,
       /<meta[^>]+property=["']og:video:thumbnail["'][^>]+content=["']([^"']+)["']/i,
-      // Facebook specific patterns
-      /<img[^>]+class=["'][^"']*spotlight[^"']*["'][^>]+src=["']([^"']+)["']/i,
-      /<img[^>]+data-src=["']([^"']+)["'][^>]*class=["'][^"']*spotlight[^"']*["']/i,
+      // Instagram specific patterns
+      /<meta[^>]+name=["']medium["'][^>]+content=["']image["'][^>]*>/i,
+      // Look for JSON-LD structured data
+      /"thumbnailUrl":\s*"([^"]+)"/i,
+      /"image":\s*"([^"]+)"/i,
     ];
 
     for (const pattern of patterns) {
@@ -107,12 +104,14 @@ export async function GET(req: Request) {
           .replace(/&lt;/g, "<")
           .replace(/&gt;/g, ">")
           .replace(/&quot;/g, '"')
-          .replace(/&#039;/g, "'");
+          .replace(/&#039;/g, "'")
+          .replace(/\\u0026/g, "&");
 
         // Validate that it's actually an image URL
         if (
           thumbnailUrl.match(/\.(jpg|jpeg|png|gif|webp)/i) ||
           thumbnailUrl.includes("scontent") ||
+          thumbnailUrl.includes("cdninstagram") ||
           thumbnailUrl.includes("fbcdn")
         ) {
           return NextResponse.json({ thumbnail: thumbnailUrl });
@@ -120,15 +119,45 @@ export async function GET(req: Request) {
       }
     }
 
-    // If we still haven't found a thumbnail and don't have a video ID,
-    // it might be a URL format we don't recognize, but we can still try to scrape
-    if (!videoId) {
-      console.log("No video ID found, but attempting to scrape anyway");
+    // Method 3: Try to extract from Instagram's JSON data in the page
+    const jsonMatch = html.match(
+      /<script type="application\/ld\+json"[^>]*>(.*?)<\/script>/
+    );
+    if (jsonMatch) {
+      try {
+        const jsonData = JSON.parse(jsonMatch[1]);
+        if (
+          jsonData.image &&
+          Array.isArray(jsonData.image) &&
+          jsonData.image[0]
+        ) {
+          return NextResponse.json({ thumbnail: jsonData.image[0] });
+        } else if (jsonData.image && typeof jsonData.image === "string") {
+          return NextResponse.json({ thumbnail: jsonData.image });
+        }
+      } catch {
+        console.log("Failed to parse JSON-LD data");
+      }
+    }
+
+    // Method 4: Look for Instagram's internal data structures
+    const sharedDataMatch = html.match(/window\._sharedData\s*=\s*({.*?});/);
+    if (sharedDataMatch) {
+      try {
+        const sharedData = JSON.parse(sharedDataMatch[1]);
+        const entryData =
+          sharedData?.entry_data?.PostPage?.[0]?.graphql?.shortcode_media;
+        if (entryData?.display_url) {
+          return NextResponse.json({ thumbnail: entryData.display_url });
+        }
+      } catch {
+        console.log("Failed to parse Instagram shared data");
+      }
     }
 
     return NextResponse.json({ error: "No thumbnail found" }, { status: 404 });
   } catch (err) {
-    console.error("Thumbnail fetch error:", err);
+    console.error("Instagram thumbnail fetch error:", err);
     return NextResponse.json(
       { error: "Failed to fetch thumbnail" },
       { status: 500 }

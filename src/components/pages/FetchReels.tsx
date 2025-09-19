@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 type ReelType = {
   id: number;
@@ -76,7 +76,77 @@ const FetchReels = () => {
     }
   };
 
-  const fetchReels = async () => {
+  const [downloadingVideos, setDownloadingVideos] = useState<Set<string>>(
+    new Set()
+  );
+
+  const downloadVideo = async (link: string) => {
+    // Only allow Facebook downloads
+    if (!isFacebookLink(link)) {
+      return;
+    }
+
+    // Prevent multiple downloads of the same video
+    if (downloadingVideos.has(link)) {
+      return;
+    }
+
+    setDownloadingVideos((prev) => new Set(prev).add(link));
+
+    try {
+      const res = await fetch(
+        `/Api/fb-download?url=${encodeURIComponent(link)}`
+      );
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (res.status === 403) {
+          alert(
+            `Access denied: ${data.error}\n\nTip: Try opening the video in your browser first, or the content might be private.`
+          );
+        } else if (res.status === 404) {
+          alert(
+            `Video not found: ${data.error}\n\nThe video might have been deleted or is not accessible.`
+          );
+        } else {
+          alert(`Download failed: ${data.error}`);
+        }
+        return;
+      }
+
+      if (data.downloadUrl) {
+        // Create a temporary link to trigger download
+        const a = document.createElement("a");
+        a.href = data.downloadUrl;
+        a.download = `facebook-video-${Date.now()}.mp4`;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        // Show success message
+        alert("Download started! Check your downloads folder.");
+      } else {
+        alert(
+          "No download URL found. The video might not be available for download."
+        );
+      }
+    } catch (err) {
+      console.error("Download error:", err);
+      alert(
+        `Network error: Failed to download video. Please check your internet connection and try again.`
+      );
+    } finally {
+      setDownloadingVideos((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(link);
+        return newSet;
+      });
+    }
+  };
+
+  const fetchReels = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -85,14 +155,16 @@ const FetchReels = () => {
         headers: { "Content-Type": "application/json" },
       });
 
-      const data: ReelType[] = await response.json();
       if (!response.ok) {
-        throw new Error((data as any).error || "Failed to fetch reels");
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to fetch reels");
       }
+
+      const data: ReelType[] = await response.json();
 
       const reelsWithThumbs = await Promise.all(
         data.map(async (reel) => {
-          let updatedReel = { ...reel };
+          const updatedReel = { ...reel };
 
           if (isFacebookLink(reel.link)) {
             // Try up to 3 times to get the Facebook thumbnail
@@ -132,7 +204,7 @@ const FetchReels = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const getColor = (cat: string) => {
     switch (cat) {
@@ -169,7 +241,7 @@ const FetchReels = () => {
 
   useEffect(() => {
     fetchReels();
-  }, []);
+  }, [fetchReels]);
 
   return (
     <div className="bg-gray-200 p-6 w-full mx-auto my-4">
@@ -320,32 +392,83 @@ const FetchReels = () => {
                 )}
 
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div
-                    className="bg-black bg-opacity-50 rounded-full p-4 pointer-events-auto cursor-pointer hover:bg-opacity-70 transition-all"
-                    onClick={() => window.open(reel.link, "_blank")}
-                  >
-                    <svg
-                      className="w-8 h-8 text-white"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
+                  <div className="flex gap-2 pointer-events-auto">
+                    <div
+                      className="bg-black bg-opacity-50 rounded-full p-4 cursor-pointer hover:bg-opacity-70 transition-all"
+                      onClick={() => window.open(reel.link, "_blank")}
+                      title="Open Video"
                     >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
+                      <svg
+                        className="w-8 h-8 text-white"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                    {isFacebookLink(reel.link) && (
+                      <div
+                        className={`rounded-full p-4 transition-all ${
+                          downloadingVideos.has(reel.link)
+                            ? "bg-gray-500 bg-opacity-80 cursor-not-allowed"
+                            : "bg-green-600 bg-opacity-80 cursor-pointer hover:bg-opacity-100"
+                        }`}
+                        onClick={() =>
+                          !downloadingVideos.has(reel.link) &&
+                          downloadVideo(reel.link)
+                        }
+                        title={
+                          downloadingVideos.has(reel.link)
+                            ? "Downloading..."
+                            : "Download Video"
+                        }
+                      >
+                        <svg
+                          className="w-8 h-8 text-white"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
-              <a
-                href={reel.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-2 inline-block text-blue-600 hover:text-blue-800"
-              >
-                Open Video
-              </a>
+              <div className="mt-2 flex gap-2 flex-wrap">
+                <a
+                  href={reel.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block text-blue-600 hover:text-blue-800"
+                >
+                  Open Video
+                </a>
+                {isFacebookLink(reel.link) && (
+                  <button
+                    onClick={() => downloadVideo(reel.link)}
+                    disabled={downloadingVideos.has(reel.link)}
+                    className={`px-3 py-1 text-white text-sm rounded transition-colors ${
+                      downloadingVideos.has(reel.link)
+                        ? "bg-gray-500 cursor-not-allowed"
+                        : "bg-green-600 hover:bg-green-700"
+                    }`}
+                    title="Download video"
+                  >
+                    {downloadingVideos.has(reel.link)
+                      ? "Downloading..."
+                      : "Download"}
+                  </button>
+                )}
+              </div>
             </div>
           ))}
         </div>

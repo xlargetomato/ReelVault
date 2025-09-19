@@ -12,7 +12,7 @@ export function middleware(req: NextRequest) {
   try {
     jwt.verify(token, process.env.JWT_SECRET as string);
     return NextResponse.next();
-  } catch (err) {
+  } catch {
     return NextResponse.redirect(new URL("/Login", req.url));
   }
 }
