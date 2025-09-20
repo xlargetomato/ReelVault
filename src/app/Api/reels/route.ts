@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
 import { getUserFromRequest } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 // import { getSession } from "next-auth/react";
-const prisma = new PrismaClient();
 export async function POST(req: Request) {
   const user = getUserFromRequest(req);
 

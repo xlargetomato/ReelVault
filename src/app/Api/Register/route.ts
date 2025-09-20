@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { hashPassword } from "@/lib/hash";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
   try {
@@ -37,7 +35,8 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ id: user.id, email: user.email });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+    const errorMessage =
+      error instanceof Error ? error.message : "An unexpected error occurred";
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
